@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>A Simon Game</title>
+  <script src="jquery-3.1.1.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet">
+</head>
+<body>
+  <style>
+  @font-face {
+    font-family: digital7;
+    src: url(digital-7.ttf);
+  }
+  body {
+    background-color: #d3efff;
+    padding-top: 50px;
+  }
+  .square {
+    outline: none;
+    border: none;
+    height: 150px;
+    width: 150px;
+  }
+  .main {
+  	position:relative;
+  	width:500px;
+  	height:500px;
+  	margin:0 auto;
+  }
+  .quarter {
+	position:absolute;
+	width:50%;
+	height:50%;
+	transition:background-color 0.2s ease-in-out;
+}
+/*.quarter:hover {
+	background-color:pink;
+}*/
+.quarter1 {
+	top:0;
+	left:0;
+	background-color:red;
+	border-radius:100% 0 0 0;
+
+}
+.quarter2 {
+	top:0;
+	right:0;
+	background-color:blue;
+	border-radius:0 100% 0 0 ;
+}
+.quarter3 {
+	bottom:0;
+	left:0;
+	background-color:orange;
+	border-radius:0 0 0 100%;
+}
+.quarter4 {
+	bottom:0;
+	right:0;
+	background-color:green;
+	border-radius:0 0 100% 0 ;
+}
+.cutout {
+	width:50%;
+	height:50%;
+	background-color:#303030;
+	position:absolute;
+	top:25%;
+	left:25%;
+	border-radius:50%;
+	pointer-events:auto;
+	}
+  #settings {
+    height: 200px;
+    width: 200px;
+    margin: 0 auto;
+    color: white;
+    padding-left: 0px;
+    padding-top: 40px;
+  }
+  #label {
+    font-family: 'Russo One', sans-serif;
+    color: white;
+    text-align: center;
+    font-size: 45px;
+    padding-bottom: 5px;
+  }
+  #center {
+    height: 50px;
+    width: 150px;
+    margin: 0 auto;
+    font-family: 'Russo One', sans-serif;
+    font-size: 25px;
+  }
+  #startText {
+    width: 90px;
+    margin: 0 auto;
+    padding-bottom: 5px;
+  }
+  #start {
+    padding-bottom: 5px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 20px;
+    width: 90px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  #strictText {
+    width: 71px;
+    margin: 0 auto;
+    padding-bottom: 5px;
+  }
+  #strict {
+    padding-bottom: 5px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 15px;
+    width: 70px;
+    height: 30px;
+    border-radius: 10px;
+    background-color: white;
+  }
+  #scorePart {
+    padding-left: 20px;
+  }
+  #score {
+    font-family: digital7;
+    font-weight: bolder;
+  }
+  footer {
+    margin-top: 20px;
+    text-align: center;
+    font-family: digital7, sans-serif;
+  }
+  button {
+    outline: none;
+  }
+  /*#green {
+    background-color: green;
+  }
+  #red {
+    background-color: red;
+  }
+  #blue {
+    background-color: blue;
+  }
+  #yellow {
+    background-color: #ffd400;
+  }*/
+  </style>
+  <script>
+  $(document).ready(function(){
+    var greenSound = new Audio("https://s3.amazonaws.com/freecodecamp/simonSound4.mp3");
+    var redSound = new Audio("https://s3.amazonaws.com/freecodecamp/simonSound3.mp3");
+    var blueSound = new Audio("https://s3.amazonaws.com/freecodecamp/simonSound2.mp3");
+    var yellowSound = new Audio("https://s3.amazonaws.com/freecodecamp/simonSound1.mp3");
+    var error = new Audio("error.mp3");
+
+    var arr = [];
+    var colours = ["#green", "#red", "#blue", '#yellow'];
+    var userMoves = [];
+    var strict = false;
+
+    function getRandomInt() {
+      min = Math.ceil(0);
+      max = Math.floor(4);
+      return Math.floor(Math.random() * (max - min)) + min;
+     }
+     function getRandomColour(){
+       return colours[getRandomInt()];
+     }
+
+     function checkArrays(){
+       var sliced = arr.slice(0, (userMoves.length));
+       if (userMoves.length <= arr.length){
+
+
+         for (let i=0; i<sliced.length; i++){
+           if (sliced[i] != userMoves[i]){
+             return "wrong";
+           }
+         }
+       }
+
+       for (let i=0; i<arr.length; i++){
+         if (arr[i] != userMoves[i]){
+           return false;
+         }
+       }
+       if (userMoves.length == 20){
+         alert("Congratulations, you won!")
+         arr = [];
+         userMoves = [];
+       }
+       return true;
+     }
+
+     $("#strict").on("click", function(){
+       if (strict == false){
+         strict = true;
+         $(this).css("background-color", "#db0000");
+       }
+       else if (strict == true){
+         strict = false;
+         $(this).css("background-color", "");
+       }
+     })
+     function changeGreen(){
+       setTimeout(function(){
+        $("#green").css("background-color", "#8fff6d");
+       }, 50);
+       setTimeout(function(){
+         $("#green").css("background-color", "");
+       }, 200);
+     }
+     function changeRed(){
+       setTimeout(function(){
+        $("#red").css("background-color", "#ffbfe0");
+       }, 50);
+       setTimeout(function(){
+         $("#red").css("background-color", "");
+       }, 200);
+     }
+     function changeBlue(){
+       setTimeout(function(){
+        $("#blue").css("background-color", "#a8dfff");
+       }, 50);
+       setTimeout(function(){
+         $("#blue").css("background-color", "");
+       }, 200);
+     }
+     function changeYellow(){
+       setTimeout(function(){
+        $("#yellow").css("background-color", "#fff296");
+       }, 50);
+       setTimeout(function(){
+         $("#yellow").css("background-color", "");
+       }, 200);
+     }
+
+     function aClick(){
+       if(arr.length < 20){
+         if (checkArrays() == true){
+           arr.push(getRandomColour())
+         }
+       function initiateTimeOut(i){
+         setTimeout(function(){
+           aMove(i)
+         }, 800);
+         setTimeout(function(){
+           $(arr[i]).css("background-color", "");
+         }, 1200);
+       }
+       function secondTimeOut(i){
+         setTimeout(function(){
+           aMove(i)
+         }, 800);
+         setTimeout(function(){
+           $(arr[i]).css("background-color", "");
+         }, 1100);
+       }
+       function thirdTimeOut(i){
+         setTimeout(function(){
+           aMove(i)
+         }, 800);
+         setTimeout(function(){
+           $(arr[i]).css("background-color", "");
+         }, 1000);
+       }
+       function fourthTimeOut(i){
+         setTimeout(function(){
+           aMove(i)
+         }, 700);
+         setTimeout(function(){
+           $(arr[i]).css("background-color", "");
+         }, 900);
+       }
+
+       function aMove(){
+         if (arr[i] == "#green"){
+           $(arr[i]).css("background-color", "#8fff6d");
+           greenSound.play();
+         }
+         if (arr[i] == "#red"){
+           $(arr[i]).css("background-color", "#ffbfe0");
+           redSound.play();
+         }
+         if (arr[i] == "#blue"){
+           $(arr[i]).css("background-color", "#a8dfff");
+           blueSound.play();
+         }
+         if (arr[i] == "#yellow"){
+           $(arr[i]).css("background-color", "#fff296");
+           yellowSound.play();
+         }
+         i++;
+         if(i < arr.length){
+           initiateTimeOut(i);
+         }
+         /*else if(arr.length >= 5 && arr.length < 9){
+           secondTimeOut(i);
+         }
+         else if(arr.length >= 9 && arr.length < 13){
+           thirdTimeOut(i);
+         }
+         else if(arr.length >= 13){
+           fourthTimeOut(i);
+         }*/
+       }
+       var i = 0;
+       initiateTimeOut(i);
+     }
+     $("#score").html(userMoves.length);
+     }
+
+    $("#start").on("click", function(){
+      if (checkArrays() == true){
+              aClick();
+      }
+      else {
+        arr = [];
+        userMoves = [];
+        aClick();
+      }
+
+      })
+
+      function playerClick(){
+        if (checkArrays() == true){
+          aClick();
+          userMoves = [];
+        }
+        else if (checkArrays() == "wrong" && strict == false){
+          error.play();
+          aClick();
+          userMoves = [];
+        }
+        else if (checkArrays() == "wrong" && strict == true){
+          error.play();
+          arr = [];
+          aClick();
+          userMoves = [];
+        }
+      }
+
+
+      $("#green").on("click", function(){
+        changeGreen();
+        greenSound.play();
+        userMoves.push("#green");
+        playerClick();
+      })
+      $("#red").on("click", function(){
+        changeRed();
+        redSound.play();
+        userMoves.push("#red");
+        playerClick()
+      })
+      $("#blue").on("click", function(){
+        changeBlue();
+        blueSound.play();
+        userMoves.push("#blue");
+        playerClick()
+      })
+      $("#yellow").on("click", function(){
+        changeYellow();
+        yellowSound.play();
+        userMoves.push("#yellow");
+        playerClick()
+      })
+
+
+
+  });
+  </script>
+  <!--<div id="body">
+  <button id="start">Start</button>
+  <button id="strict">Strict mode: OFF</button><br>
+  <div>Score: <span id="score"></span></div>
+  <button class="square" id="green"></button>
+  <button class="square" id="red"></button>
+  <button class="square" id="blue"></button>
+  <button class="square" id="yellow"></button>
+</div>-->
+  <div class="main">
+	<div class="quarter quarter1" id="red"></div>
+	<div class="quarter quarter2" id="blue"></div>
+	<div class="quarter quarter3" id="yellow"></div>
+	<div class="quarter quarter4" id="green"></div>
+	<div class="cutout">
+  <div id="settings">
+    <div id="label">
+      SIMON
+    </div>
+    <div id="startText">
+  <button id="start">START</button>
+</div>
+<div id="strictText">
+  <button id="strict">STRICT</button><br>
+</div>
+    <div id="center">
+
+
+  <div id="scorePart">SCORE: <span id="score">0</span></div>
+  </div>
+</div>
+  </div>
+
+</div>
+<footer>Coded by <a href="https://github.com/cazwazacz" target="_blank">Allan Wazacz</a>.</footer>
+</body>
+</html>
